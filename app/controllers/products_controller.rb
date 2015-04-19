@@ -1,5 +1,6 @@
 class ProductsController < ApplicationController
   before_action :authenticate_user!, except: [:index, :show]
+  before_action :authorize, except: [:index, :show, :create]
   
   expose(:category)
   expose(:products)
@@ -21,7 +22,7 @@ class ProductsController < ApplicationController
 
   def create
     self.product = Product.new(product_params)
-
+    product.user_id = current_user.id
     if product.save
       category.products << product
       redirect_to category_product_url(category, product), notice: 'Product was successfully created.'
@@ -45,6 +46,12 @@ class ProductsController < ApplicationController
   end
 
   private
+  
+  def authorize
+    unless current_user == product.user
+      redirect_to category_product_url(category, product), flash: { error: "You are not allowed to edit this product."}
+    end
+  end
 
   def product_params
     params.require(:product).permit(:title, :description, :price, :category_id)

@@ -9,6 +9,7 @@ describe CategoriesController do
   let(:user) { build(:user) }
 
   before do
+    @request.env["devise.mapping"] = Devise.mappings[:user]
     sign_in user
     controller.stub(:user_signed_in?).and_return(true)
     controller.stub(:current_user).and_return(user)
